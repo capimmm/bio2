@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
-<title>Bio Site</title>
+<title>capim</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -461,6 +461,15 @@ body.music-open .music-panel { transform: none; box-shadow: -20px 0 60px rgba(0,
 /* ---------- ARQUIVOS AUSENTES: fundo alternativo e foto sem imagem ---------- */
 .aurora { position: fixed; inset: 0; z-index: -4; display: none; overflow: hidden; background: #07070a; }
 body.no-video .aurora { display: block; }
+body.no-video .video-background { display: none; }
+#dbg {
+    position: fixed; top: 10px; left: 10px; right: 10px; z-index: 99999;
+    padding: 10px 14px; border-radius: 12px;
+    background: rgba(140,25,25,.92); color: #fff;
+    font-size: .8rem; line-height: 1.4;
+    user-select: text; -webkit-user-select: text;
+}
+#dbg.ok { background: rgba(20,110,60,.92); }
 .aurora::before, .aurora::after {
     content: ''; position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%;
     filter: blur(80px); opacity: .5; animation: drift 18s ease-in-out infinite alternate;
@@ -526,14 +535,15 @@ body.on .avatar.no-photo::after { animation-play-state: running; }
         <div class="avatar reveal" id="avatar" data-letter="?" style="--i:0">
             <img id="foto" alt="Foto de perfil" draggable="false">
         </div>
-        <div class="nickname" id="nick" aria-label="Seu Nick">Seu Nick</div>
+        <div class="nickname" id="nick" aria-label="capim">capim</div>
     </section>
 
     <nav class="links">
-        <a href="#" class="link-btn reveal" style="--i:3" target="_blank" rel="noopener">Instagram</a>
-        <a href="#" class="link-btn reveal" style="--i:4" target="_blank" rel="noopener">YouTube</a>
-        <a href="#" class="link-btn reveal" style="--i:5" target="_blank" rel="noopener">Portfólio</a>
-        <a href="#" class="link-btn reveal" style="--i:6" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://www.instagram.com/abnr.gg/" class="link-btn reveal" style="--i:3" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.tiktok.com/@abnr.gg" class="link-btn reveal" style="--i:4" target="_blank" rel="noopener">TikTok</a>
+        <a href="https://discord.gg/MnKRa7AEbJ" class="link-btn reveal" style="--i:5" target="_blank" rel="noopener">Discord</a>
+        <a href="https://wa.me/5548991126494" class="link-btn reveal" style="--i:6" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://www.roblox.com/pt/users/2728037809/profile" class="link-btn reveal" style="--i:7" target="_blank" rel="noopener">Roblox</a>
     </nav>
 </main>
 
@@ -708,6 +718,7 @@ function setSpotify(on) {
     if (on === spotifyOn) return;
     spotifyOn = on;
     vol.classList.toggle('spotify', on);
+    vol.title = on ? 'Tocando no Spotify: o volume dele é o do seu aparelho' : '';
     fadeDuck(on ? 0 : 1);
 }
 
@@ -861,14 +872,61 @@ achar('foto', EXT_IMG).then(u => {
 });
 $('avatar').dataset.letter = (nick.getAttribute('aria-label') || '?').trim()[0].toUpperCase();
 
+/* ===== VÍDEO DE FUNDO + DIAGNÓSTICO (abra o site com ?debug no final do endereço) ===== */
 const FORMATOS = [['mp4', 'video/mp4'], ['webm', 'video/webm'], ['mov', 'video/quicktime'], ['MP4', 'video/mp4']];
-FORMATOS.forEach(([ext, type], i) => {
+const debugOn = /[?&]debug\b/.test(location.search);
+let dbgEl = null, videoTocou = false, decodeRuim = false, falhas = 0;
+
+function statusVideo(msg, ok) {
+    console[ok ? 'log' : 'warn']('[vídeo] ' + msg);
+    if (!debugOn) return;
+    if (!dbgEl) { dbgEl = document.createElement('div'); dbgEl.id = 'dbg'; document.body.append(dbgEl); }
+    dbgEl.className = ok ? 'ok' : '';
+    dbgEl.textContent = (ok ? '✅ ' : '⚠️ ') + msg;
+}
+function falhouVideo(msg) {
+    document.body.classList.add('no-video');   // mostra o fundo alternativo
+    statusVideo(msg, false);
+}
+
+FORMATOS.forEach(([ext, type]) => {
     const src = document.createElement('source');
     src.src = PASTA + '/fundo.' + ext;
     src.type = type;
-    if (i === FORMATOS.length - 1) src.addEventListener('error', () => document.body.classList.add('no-video'));
+    src.addEventListener('error', () => {
+        if (++falhas === FORMATOS.length)
+            falhouVideo('Não achei ou não consegui abrir ' + PASTA + '/fundo.mp4 (nem .webm/.mov). Confira o nome, a pasta e maiúsculas/minúsculas.');
+    });
     video.append(src);
 });
+
+video.addEventListener('error', () => {
+    const c = video.error && video.error.code;
+    falhouVideo(c === 3 ? 'O arquivo foi encontrado, mas o navegador não conseguiu decodificar (comum em H.265/HEVC). Converta para H.264.'
+              : c === 2 ? 'Falha de rede ao baixar o vídeo (arquivo muito pesado?).'
+              :           'O navegador não suporta este vídeo (formato ou codec).');
+});
+
+video.addEventListener('playing', () => {
+    videoTocou = true;
+    if (!decodeRuim) document.body.classList.remove('no-video');
+    setTimeout(() => {
+        const q = video.getVideoPlaybackQuality && video.getVideoPlaybackQuality();
+        if (video.videoWidth === 0 || (q && q.totalVideoFrames === 0 && !video.paused)) {
+            decodeRuim = true;
+            falhouVideo('O vídeo toca (só o som) mas a imagem não aparece: provavelmente H.265/HEVC. Converta para H.264.');
+        } else {
+            statusVideo('Vídeo tocando (' + video.videoWidth + '×' + video.videoHeight + ').', true);
+        }
+    }, 2500);
+});
+
+/* se em 12 s depois do clique nada tocou, avisa */
+intro.addEventListener('click', () => setTimeout(() => {
+    if (!videoTocou && !document.body.classList.contains('no-video'))
+        falhouVideo('O vídeo demorou demais para começar (arquivo muito pesado?). Compacte o fundo.mp4.');
+}, 12000));
+
 video.load();
 </script>
 
