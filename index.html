@@ -1,385 +1,445 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Site</title>
-    <!-- Fonte Moderna -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --apple-curve: cubic-bezier(0.16, 1, 0.3, 1);
-            --glass-bg: rgba(20, 20, 20, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<title>Bio Site</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            
-            /* REMOVE A SELEÇÃO DE TEXTO E AZULZINHO NO CELULAR */
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+<style>
+:root {
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --glass-bg: rgba(20, 20, 20, 0.38);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --px: 0;
+    --py: 0;
+}
 
-        body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden; 
-            background-color: #050505;
-            color: #fff;
-            cursor: default;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        /* =========================================
-           TELA DE INTRODUÇÃO
-           ========================================= */
-        #intro-overlay {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            cursor: pointer;
-            transition: opacity 0.8s var(--apple-curve), visibility 0.8s;
-        }
+html, body { height: 100%; }
 
-        #intro-overlay h1 {
-            font-weight: 300;
-            letter-spacing: 3px;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            animation: pulse 2s infinite ease-in-out;
-        }
+body {
+    background: #050505;
+    color: #fff;
+    overflow: hidden;
+}
 
-        /* =========================================
-           VÍDEO DE FUNDO
-           ========================================= */
-        .video-background {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            transform: translate(-50%, -50%) scale(1.05);
-            z-index: -2;
-            pointer-events: none;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 1.5s var(--apple-curve);
-        }
+/* ---------- INTRO: revela o site a partir do ponto do clique ---------- */
+#intro {
+    --x: 50%;
+    --y: 50%;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    background: #000;
+    border: 0;
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    clip-path: circle(150vmax at var(--x) var(--y));
+    transition: clip-path 1.2s var(--ease);
+}
+#intro.open { clip-path: circle(0 at var(--x) var(--y)); pointer-events: none; }
+#intro span {
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    animation: pulse 2.2s infinite ease-in-out;
+}
+#intro i {
+    width: 1px;
+    height: 46px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.7), transparent);
+    transform-origin: top;
+    animation: drip 2.2s infinite ease-in-out;
+}
+@keyframes pulse { 0%,100% { opacity: .3 } 50% { opacity: 1 } }
+@keyframes drip  { 0% { transform: scaleY(0) } 60% { transform: scaleY(1); opacity: 1 } 100% { transform: scaleY(1); opacity: 0 } }
 
-        /* Overlay escuro para dar contraste */
-        .video-overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 1.5s var(--apple-curve);
-        }
+/* ---------- FUNDO ---------- */
+.video-background {
+    position: fixed;
+    top: 50%; left: 50%;
+    min-width: 100%; min-height: 100%;
+    object-fit: cover;
+    z-index: -3;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(calc(-50% + var(--px) * -14px), calc(-50% + var(--py) * -14px)) scale(1.18);
+    filter: blur(14px) brightness(.6);
+    transition: opacity 2s var(--ease), filter 2.4s var(--ease), transform 1.6s var(--ease);
+}
+body.on .video-background {
+    opacity: 1;
+    filter: blur(0) brightness(1);
+    transform: translate(calc(-50% + var(--px) * -14px), calc(-50% + var(--py) * -14px)) scale(1.07);
+}
 
-        /* =========================================
-           BANNER SUPERIOR (AGORA MENOR)
-           ========================================= */
-        .banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 22vh; /* Diminuído de 32vh para 22vh */
-            background: url('./capim/banner.jpg') center/cover no-repeat;
-            z-index: 1;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 1s var(--apple-curve), transform 1s var(--apple-curve);
-        }
+.video-overlay {
+    position: fixed; inset: 0; z-index: -2;
+    background: radial-gradient(circle at 50% 45%, rgba(0,0,0,.25) 0%, rgba(0,0,0,.88) 100%);
+    opacity: 0;
+    transition: opacity 1.8s var(--ease);
+}
+body.on .video-overlay { opacity: 1; }
 
-        .banner::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent 0%, rgba(5,5,5,0.6) 60%, #050505 100%);
-        }
+/* grão de filme: dá textura e esconde compressão do vídeo */
+.grain {
+    position: fixed; inset: -50%; z-index: -1; pointer-events: none; opacity: .07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    animation: grain 1.2s steps(6) infinite;
+}
+@keyframes grain {
+    0% { transform: translate(0,0) } 20% { transform: translate(-3%,2%) } 40% { transform: translate(2%,-3%) }
+    60% { transform: translate(-2%,-1%) } 80% { transform: translate(3%,3%) } 100% { transform: translate(0,0) }
+}
 
-        /* =========================================
-           FOTO DE PERFIL E NICK (MAIS PRA CIMA)
-           ========================================= */
-        .profile-wrapper {
-            position: fixed;
-            top: calc(22vh - 60px); /* Ajustado para acompanhar o banner menor */
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 1s var(--apple-curve) 0.2s;
-        }
+/* ---------- PALCO (rola se a tela for baixa) ---------- */
+.stage {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 150px;
+    scrollbar-width: none;
+}
+.stage::-webkit-scrollbar { display: none; }
 
-        .profile-pic {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #fff;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.1);
-            transition: all 0.5s var(--apple-curve);
-            cursor: pointer;
-        }
+/* elementos que entram em cascata: blur -> nítido */
+.reveal {
+    opacity: 0;
+    transform: translateY(26px) scale(.97);
+    filter: blur(10px);
+    transition: opacity 1.1s var(--ease), transform 1.1s var(--ease), filter 1.1s var(--ease);
+    transition-delay: calc(var(--i, 0) * 110ms + 250ms);
+}
+body.on .reveal { opacity: 1; transform: none; filter: blur(0); }
 
-        .profile-wrapper:hover .profile-pic {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 0 4px rgba(255, 255, 255, 0.3);
-        }
+/* ---------- BANNER ---------- */
+.banner {
+    width: 100%;
+    height: 22vh;
+    min-height: 130px;
+    flex-shrink: 0;
+    background: url('./capim/banner.jpg') center/cover no-repeat;
+    position: relative;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 1.3s var(--ease) .1s;
+}
+body.on .banner { clip-path: inset(0 0 0 0); }
+.banner::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(5,5,5,.6) 60%, #050505 100%);
+}
 
-        .nickname {
-            margin-top: 15px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 15px rgba(0, 0, 0, 1);
-            opacity: 0;
-            transform: translateY(-10px);
-            filter: blur(5px);
-            transition: all 0.5s var(--apple-curve);
-            pointer-events: none;
-        }
+/* ---------- PERFIL ---------- */
+.profile {
+    margin-top: -60px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.avatar {
+    position: relative;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    padding: 3px;
+    background: conic-gradient(from 0deg, #fff, rgba(255,255,255,.08) 30%, #fff 55%, rgba(255,255,255,.08) 80%, #fff);
+    animation: spin 6s linear infinite paused;
+    box-shadow: 0 10px 30px rgba(0,0,0,.8);
+}
+body.on .avatar { animation-play-state: running; }
+.avatar::before { /* halo difuso atrás da foto */
+    content: ''; position: absolute; inset: -14px; border-radius: 50%; z-index: -1;
+    background: radial-gradient(circle, rgba(255,255,255,.22), transparent 70%);
+    animation: breathe 4s ease-in-out infinite;
+}
+.avatar img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 3px solid #050505;
+    animation: spin 6s linear infinite reverse paused; /* contra-gira p/ foto ficar parada */
+}
+body.on .avatar img { animation-play-state: running; }
+@keyframes spin    { to { transform: rotate(360deg) } }
+@keyframes breathe { 0%,100% { opacity: .5; transform: scale(.95) } 50% { opacity: 1; transform: scale(1.08) } }
 
-        .profile-wrapper:hover .nickname {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-        }
+.nickname {
+    margin-top: 16px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    display: flex;
+    text-shadow: 0 2px 15px #000;
+}
+.nickname span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(8px);
+    transition: all .9s var(--ease);
+    transition-delay: calc(var(--c) * 55ms + 700ms);
+    white-space: pre;
+}
+body.on .nickname span { opacity: 1; transform: none; filter: blur(0); }
 
-        /* =========================================
-           BOTÕES CENTRAIS
-           ========================================= */
-        .links-container {
-            position: fixed;
-            top: 55%; /* Ajustado para equilibrar */
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 90%;
-            max-width: 340px; 
-            z-index: 5;
-            opacity: 0;
-            transition: opacity 1s var(--apple-curve) 0.4s, transform 1s var(--apple-curve) 0.4s;
-        }
+/* ---------- LINKS ---------- */
+.links {
+    margin-top: 30px;
+    width: 90%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.link-btn {
+    --mx: 50%; --my: 50%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: .95rem;
+    letter-spacing: .5px;
+    /* transform separado do .reveal para não brigar com a entrada */
+    translate: var(--tx, 0px) var(--ty, 0px);
+    transition: opacity 1.1s var(--ease), filter 1.1s var(--ease),
+                transform 1.1s var(--ease), translate .5s var(--ease),
+                border-color .4s, background .4s, scale .4s var(--ease);
+}
+.link-btn::before { /* luz que segue o cursor */
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(180px circle at var(--mx) var(--my), rgba(255,255,255,.22), transparent 65%);
+    opacity: 0;
+    transition: opacity .4s;
+}
+.link-btn::after { /* brilho que varre o botão */
+    content: '';
+    position: absolute; top: 0; bottom: 0; left: -60%;
+    width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.18), transparent);
+    transform: skewX(-18deg);
+}
+.link-btn:hover::after { left: 130%; transition: left .9s var(--ease); }
+.link-btn:hover::before { opacity: 1; }
+.link-btn:hover { border-color: rgba(255,255,255,.45); background: rgba(30,30,30,.5); scale: 1.03; }
+.link-btn:active { scale: .97; }
+.link-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-        .link-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            letter-spacing: 0.5px;
-            transition: all 0.4s var(--apple-curve);
-        }
+/* ---------- PIX ---------- */
+.pix {
+    position: fixed;
+    left: 40px; bottom: 40px;
+    z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    background: none; border: 0; cursor: pointer;
+    --i: 6;
+}
+.qr {
+    position: relative;
+    background: #fff;
+    padding: 10px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    transition: transform .5s var(--ease), box-shadow .5s var(--ease);
+}
+.qr::after { /* onda que chama atenção para o QR */
+    content: ''; position: absolute; inset: 0; border-radius: 16px;
+    border: 2px solid rgba(255,255,255,.6);
+    animation: ping 3s var(--ease) infinite 2s;
+    pointer-events: none;
+}
+@keyframes ping { 0% { transform: scale(1); opacity: .8 } 70%,100% { transform: scale(1.35); opacity: 0 } }
+.pix:hover .qr { transform: scale(1.08) translateY(-5px); box-shadow: 0 15px 40px rgba(255,255,255,.2); }
+.pix:focus-visible .qr { outline: 2px solid #fff; outline-offset: 4px; }
+.qr img { width: 110px; height: 110px; display: block; }
 
-        .link-btn:hover {
-            background: #ffffff;
-            color: #000000;
-            transform: scale(1.03);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15);
-            border-color: #ffffff;
-        }
+.toast {
+    position: absolute;
+    bottom: 130px;
+    background: #4ade80; color: #000;
+    font-size: .8rem; font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(10px) scale(.9);
+    transition: all .4s var(--ease);
+    pointer-events: none;
+    box-shadow: 0 5px 15px rgba(74,222,128,.3);
+}
+.toast.show { opacity: 1; transform: none; }
 
-        /* =========================================
-           PIX (AGORA EMBAIXO NA ESQUERDA)
-           ========================================= */
-        .pix-sidebar {
-            position: fixed;
-            left: 40px;
-            bottom: 40px; /* Movido para baixo */
-            top: auto;
-            transform: translateY(0);
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: all 0.5s var(--apple-curve);
-        }
+/* ---------- MOBILE ---------- */
+@media (max-width: 768px) {
+    .banner { height: 20vh; }
+    .profile { margin-top: -50px; }
+    .avatar { width: 100px; height: 100px; }
+    .nickname { font-size: 1.1rem; }
+    .links { margin-top: 24px; gap: 10px; }
+    .pix { left: 20px; bottom: 20px; }
+    .qr { padding: 6px; border-radius: 12px; }
+    .qr img { width: 60px; height: 60px; }
+    .toast { bottom: 75px; font-size: .7rem; padding: 4px 10px; }
+    .stage { padding-bottom: 110px; }
+}
 
-        .qr-wrapper {
-            background: #ffffff;
-            padding: 10px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: all 0.4s var(--apple-curve);
-        }
-
-        .pix-sidebar:hover .qr-wrapper {
-            transform: scale(1.08) translateY(-5px);
-            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.2);
-        }
-
-        .qr-code {
-            width: 110px;
-            height: 110px;
-            display: block;
-        }
-
-        .pix-copy-text {
-            position: absolute;
-            bottom: 130px; /* Joga o aviso pra cima do QR code */
-            background: #4ade80;
-            color: #000;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 6px 16px;
-            border-radius: 20px;
-            opacity: 0;
-            transform: translateY(10px) scale(0.9);
-            transition: all 0.4s var(--apple-curve);
-            pointer-events: none;
-            white-space: nowrap;
-            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.3);
-        }
-
-        .pix-copy-text.copied {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        /* =========================================
-           CLASSES DE ANIMAÇÃO (JS)
-           ========================================= */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
-        .show-element { opacity: 1 !important; }
-        .banner.show-element { transform: translateY(0) !important; }
-        .links-container.show-element { transform: translate(-50%, -50%) !important; }
-        .pix-sidebar.show-element { transform: translateY(0) !important; }
-
-        /* =========================================
-           RESPONSIVIDADE (MOBILE)
-           ========================================= */
-        @media (max-width: 768px) {
-            .banner { height: 20vh; }
-            .profile-wrapper { top: calc(20vh - 50px); }
-            .profile-pic { width: 100px; height: 100px; }
-            .nickname { font-size: 1.1rem; }
-            .links-container { top: 52%; gap: 10px; }
-            
-            /* No celular, o Pix fica no cantinho sem atrapalhar */
-            .pix-sidebar { left: 20px; bottom: 20px; }
-            .qr-wrapper { padding: 6px; border-radius: 12px; }
-            .qr-code { width: 60px; height: 60px; }
-            .pix-copy-text { bottom: 75px; font-size: 0.7rem; padding: 4px 10px; }
-        }
-    </style>
+/* respeita quem desativa animações no sistema */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+    .grain { display: none; }
+}
+</style>
 </head>
 <body>
 
-    <!-- Intro -->
-    <div id="intro-overlay">
-        <h1>Clique para entrar</h1>
-    </div>
+<button id="intro" type="button" aria-label="Entrar no site">
+    <span>Clique para entrar</span>
+    <i></i>
+</button>
 
-    <!-- Vídeo (O caminho está exatamente como na sua imagem do GitHub) -->
-    <video id="bg-video" class="video-background" src="capim/fundo.mp4" loop muted playsinline preload="auto"></video>
-    <div class="video-overlay" id="video-overlay"></div>
+<video id="bg-video" class="video-background" src="capim/fundo.mp4" loop muted playsinline preload="auto"></video>
+<div class="video-overlay"></div>
+<div class="grain"></div>
 
-    <!-- Banner -->
-    <div class="banner" id="banner"></div>
+<main class="stage">
+    <div class="banner"></div>
 
-    <!-- Perfil -->
-    <div class="profile-wrapper" id="profile">
-        <img src="capim/foto.jpg" alt="Foto" class="profile-pic">
-        <div class="nickname">Seu Nick</div>
-    </div>
-
-    <!-- Links -->
-    <div class="links-container" id="links">
-        <a href="#" class="link-btn" target="_blank">Instagram</a>
-        <a href="#" class="link-btn" target="_blank">YouTube</a>
-        <a href="#" class="link-btn" target="_blank">Portfólio</a>
-        <a href="#" class="link-btn" target="_blank">WhatsApp</a>
-    </div>
-
-    <!-- Pix -->
-    <div class="pix-sidebar" id="pix">
-        <div class="qr-wrapper">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=ChavePixFicticia123&color=000000&bgcolor=FFFFFF" alt="QR Code" class="qr-code">
+    <section class="profile">
+        <div class="avatar reveal" style="--i:0">
+            <img src="capim/foto.jpg" alt="Foto de perfil" draggable="false">
         </div>
-        <div class="pix-copy-text" id="pix-text">Copiado! ✅</div>
+        <div class="nickname" id="nick" aria-label="Seu Nick">Seu Nick</div>
+    </section>
+
+    <nav class="links">
+        <a href="#" class="link-btn reveal" style="--i:3" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" class="link-btn reveal" style="--i:4" target="_blank" rel="noopener">YouTube</a>
+        <a href="#" class="link-btn reveal" style="--i:5" target="_blank" rel="noopener">Portfólio</a>
+        <a href="#" class="link-btn reveal" style="--i:6" target="_blank" rel="noopener">WhatsApp</a>
+    </nav>
+</main>
+
+<button class="pix reveal" id="pix" type="button" aria-label="Copiar chave Pix">
+    <div class="qr">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=ChavePixFicticia123&color=000000&bgcolor=FFFFFF" alt="QR Code Pix" draggable="false">
     </div>
+    <div class="toast" id="toast">Copiado! ✅</div>
+</button>
 
-    <script>
-        // BLOQUEAR BOTÃO DIREITO (ANTI-CÓPIA DE IMAGEM)
-        document.addEventListener('contextmenu', event => event.preventDefault());
+<script>
+document.addEventListener('contextmenu', e => e.preventDefault());
 
-        const overlay = document.getElementById('intro-overlay');
-        const video = document.getElementById('bg-video');
-        const videoOverlay = document.getElementById('video-overlay');
-        
-        const banner = document.getElementById('banner');
-        const profile = document.getElementById('profile');
-        const links = document.getElementById('links');
-        const pix = document.getElementById('pix');
+const $ = id => document.getElementById(id);
+const intro = $('intro'), video = $('bg-video');
+const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-        // Iniciar Tudo
-        overlay.addEventListener('click', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => { overlay.style.visibility = 'hidden'; }, 800);
+/* Nick vira letras individuais para a animação em onda */
+const nick = $('nick');
+[...nick.textContent].forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.textContent = ch;
+    s.style.setProperty('--c', i);
+    s.setAttribute('aria-hidden', 'true');
+    nick.appendChild(s);
+});
+nick.firstChild.remove?.();
+nick.childNodes.forEach(n => { if (n.nodeType === 3) n.remove(); });
 
-            // Toca o vídeo
-            video.play().then(() => {
-                video.style.opacity = '1';
-                videoOverlay.style.opacity = '1';
-            }).catch(e => console.log("Erro no autoplay do video:", e));
+/* Entrar: o círculo preto fecha no ponto do clique */
+let entered = false;
+function enter(e) {
+    if (entered) return;
+    entered = true;
+    const x = e && e.clientX ? e.clientX : innerWidth / 2;
+    const y = e && e.clientY ? e.clientY : innerHeight / 2;
+    intro.style.setProperty('--x', x + 'px');
+    intro.style.setProperty('--y', y + 'px');
+    requestAnimationFrame(() => {
+        intro.classList.add('open');
+        document.body.classList.add('on');
+    });
+    video.play().catch(err => console.log('Autoplay bloqueado:', err));
+    setTimeout(() => intro.remove(), 1400);
+}
+intro.addEventListener('click', enter);
 
-            // Efeito Cascata Suave
-            setTimeout(() => banner.classList.add('show-element'), 100);
-            setTimeout(() => profile.classList.add('show-element'), 300);
-            setTimeout(() => links.classList.add('show-element'), 500);
-            setTimeout(() => pix.classList.add('show-element'), 700);
+/* Parallax suave do fundo + luz nos botões (só com mouse) */
+if (fine) {
+    addEventListener('pointermove', e => {
+        const r = document.documentElement.style;
+        r.setProperty('--px', (e.clientX / innerWidth - .5).toFixed(3));
+        r.setProperty('--py', (e.clientY / innerHeight - .5).toFixed(3));
+    });
+    document.querySelectorAll('.link-btn').forEach(b => {
+        b.addEventListener('pointermove', e => {
+            const r = b.getBoundingClientRect();
+            const x = e.clientX - r.left, y = e.clientY - r.top;
+            b.style.setProperty('--mx', x + 'px');
+            b.style.setProperty('--my', y + 'px');
+            /* efeito magnético: o botão "puxa" um pouco em direção ao cursor */
+            b.style.setProperty('--tx', ((x / r.width - .5) * 8).toFixed(1) + 'px');
+            b.style.setProperty('--ty', ((y / r.height - .5) * 6).toFixed(1) + 'px');
         });
-
-        // Copiar Pix
-        const pixSidebar = document.getElementById('pix');
-        const pixText = document.getElementById('pix-text');
-        const chavePix = "seu-email@exemplo.com"; // ⚠️ COLOQUE SUA CHAVE AQUI
-
-        pixSidebar.addEventListener('click', () => {
-            navigator.clipboard.writeText(chavePix).then(() => {
-                pixText.classList.add('copied');
-                setTimeout(() => pixText.classList.remove('copied'), 2500);
-            }).catch(err => {
-                alert("Erro ao copiar. A chave é: " + chavePix);
-            });
+        b.addEventListener('pointerleave', () => {
+            b.style.setProperty('--tx', '0px');
+            b.style.setProperty('--ty', '0px');
         });
-    </script>
+    });
+}
+
+/* Copiar Pix */
+const chavePix = 'seu-email@exemplo.com'; // ⚠️ COLOQUE SUA CHAVE AQUI
+const toast = $('toast');
+function copiado() {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+$('pix').addEventListener('click', () => {
+    (navigator.clipboard
+        ? navigator.clipboard.writeText(chavePix)
+        : Promise.reject()
+    ).then(copiado).catch(() => {
+        const t = document.createElement('textarea');
+        t.value = chavePix; document.body.appendChild(t); t.select();
+        try { document.execCommand('copy'); copiado(); }
+        catch { alert('Erro ao copiar. A chave é: ' + chavePix); }
+        t.remove();
+    });
+});
+</script>
 </body>
 </html>
