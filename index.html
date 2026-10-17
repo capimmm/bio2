@@ -139,7 +139,7 @@ body.on .reveal { opacity: 1; transform: none; filter: blur(0); }
     height: 22vh;
     min-height: 130px;
     flex-shrink: 0;
-    background: url('./capim/banner.jpg') center/cover no-repeat;
+    background: linear-gradient(135deg, #1c1c24, #0a0a0d) center/cover no-repeat; /* fallback se não achar o banner */
     position: relative;
     clip-path: inset(0 0 100% 0);
     transition: clip-path 1.3s var(--ease) .1s;
@@ -184,7 +184,7 @@ body.on .avatar { animation-play-state: running; }
     animation: spin 6s linear infinite reverse paused; /* contra-gira p/ foto ficar parada */
 }
 body.on .avatar img { animation-play-state: running; }
-@keyframes spin    { to { transform: rotate(360deg) } }
+@keyframes spin    { to { rotate: 360deg } }
 @keyframes breathe { 0%,100% { opacity: .5; transform: scale(.95) } 50% { opacity: 1; transform: scale(1.08) } }
 
 .nickname {
@@ -303,6 +303,189 @@ body.on .nickname span { opacity: 1; transform: none; filter: blur(0); }
 }
 .toast.show { opacity: 1; transform: none; }
 
+/* ---------- BARRA DE VOLUME (estilo iPhone) ---------- */
+:root { --panel-w: min(340px, 86vw); }
+
+.vol {
+    position: fixed;
+    left: 50%; bottom: 36px;
+    translate: -50% 0;
+    z-index: 10;
+    width: 220px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 0;
+}
+.vol-btn {
+    flex-shrink: 0; width: 24px; height: 24px;
+    display: grid; place-items: center;
+    background: none; border: 0; color: #fff; cursor: pointer;
+    transition: scale .3s var(--ease);
+}
+.vol-btn:active { scale: .85; }
+.vol-btn svg { width: 22px; height: 22px; overflow: visible; filter: drop-shadow(0 2px 6px rgba(0,0,0,.65)); }
+.vol-btn .w1, .vol-btn .w2, .vol-btn .wx { transition: opacity .3s; }
+.vol-btn .wx { opacity: 0; }
+.vol[data-level="0"] .w1, .vol[data-level="0"] .w2 { opacity: 0; }
+.vol[data-level="0"] .wx { opacity: 1; }
+.vol[data-level="1"] .w2 { opacity: 0; }
+
+.vol-track {
+    position: relative;
+    flex: 1;
+    height: 22px;            /* área de toque grande, barra visível é menor */
+    display: flex; align-items: center;
+    cursor: pointer;
+    touch-action: none;
+}
+.vol-bar {
+    position: relative;
+    width: 100%; height: 6px;
+    border-radius: 99px;
+    background: rgba(255,255,255,.28);
+    box-shadow: 0 2px 10px rgba(0,0,0,.55), 0 0 0 .5px rgba(0,0,0,.25);
+    overflow: hidden;
+    transition: height .35s var(--ease);
+}
+.vol-fill {
+    position: absolute; inset: 0 auto 0 0;
+    width: 40%;
+    background: #fff;
+    border-radius: 99px;
+}
+.vol-track:hover .vol-bar,
+.vol-track:focus-visible .vol-bar,
+.vol.drag .vol-bar { height: 12px; }   /* engrossa ao tocar, como no iOS */
+.vol-track:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 99px; }
+.vol-btn:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 6px; }
+
+/* porcentagem (aparece ao mexer) e selo do Spotify, ambos ao lado da barra */
+.vol-pct, .vol-sp {
+    position: absolute; left: calc(100% + 12px); top: 50%;
+    translate: 0 -50%;
+}
+.vol-pct {
+    font-size: .85rem; font-weight: 500; font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 8px rgba(0,0,0,.85);
+    opacity: 0; pointer-events: none;
+    transition: opacity .35s var(--ease);
+}
+.vol.show-pct .vol-pct { opacity: 1; }
+.vol-sp {
+    width: 26px; height: 26px; padding: 0;
+    background: none; border: 0; cursor: pointer;
+    opacity: 0; scale: .6; pointer-events: none;
+    transition: opacity .4s var(--ease), scale .4s var(--ease);
+}
+.vol-sp svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
+.vol-sp:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 50%; }
+.vol.spotify .vol-sp { opacity: 1; scale: 1; pointer-events: auto; }
+.vol.spotify .vol-sp svg { animation: beat 2.2s ease-in-out infinite; }
+.vol.spotify .vol-pct { opacity: 0; }
+.vol.spotify .vol-track, .vol.spotify .vol-btn { opacity: .4; pointer-events: none; }
+.vol-track, .vol-btn { transition: opacity .5s var(--ease); }
+@keyframes beat { 0%,100% { scale: 1 } 50% { scale: 1.12 } }
+
+/* ---------- PLAYLIST (aba na direita + painel) ---------- */
+.music-tab {
+    position: fixed;
+    right: 0; top: 50%;
+    translate: 0 -50%;
+    z-index: 21;
+    opacity: 0;
+    transition: opacity 1s var(--ease) 1.3s;
+}
+body.on .music-tab { opacity: 1; }
+
+.music-btn {
+    width: 46px; height: 72px;
+    display: grid; place-items: center;
+    color: #fff; cursor: pointer;
+    background: rgba(20,20,20,.7);
+    border: 1px solid var(--glass-border); border-right: 0;
+    border-radius: 18px 0 0 18px;
+    box-shadow: -6px 6px 24px rgba(0,0,0,.4);
+    transition: translate .8s var(--ease), background .3s, width .4s var(--ease);
+}
+.music-btn:hover { background: rgba(45,45,45,.85); width: 52px; }
+.music-btn:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.music-btn svg { width: 22px; height: 22px; grid-area: 1/1; transition: opacity .3s, transform .5s var(--ease); }
+.music-btn .i-close { opacity: 0; transform: rotate(-90deg); }
+body.music-open .music-btn { translate: calc(-1 * var(--panel-w)) 0; }
+body.music-open .music-btn .i-note { opacity: 0; transform: rotate(90deg); }
+body.music-open .music-btn .i-close { opacity: 1; transform: none; }
+
+.music-scrim {
+    position: fixed; inset: 0; z-index: 15;
+    background: rgba(0,0,0,.35);
+    opacity: 0; visibility: hidden;
+    transition: opacity .6s var(--ease), visibility .6s;
+}
+body.music-open .music-scrim { opacity: 1; visibility: visible; }
+
+.music-panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    z-index: 20;
+    width: var(--panel-w);
+    padding: calc(env(safe-area-inset-top, 0px) + 24px) 18px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    display: flex; flex-direction: column; gap: 18px;
+    background: rgba(12,12,12,.72);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border-left: 1px solid var(--glass-border);
+    transform: translateX(100%);
+    transition: transform .8s var(--ease);
+}
+body.music-open .music-panel { transform: none; box-shadow: -20px 0 60px rgba(0,0,0,.5); }
+
+.music-panel h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: .3px; }
+
+.m-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.m-link {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 8px;
+    color: #fff; text-decoration: none;
+    font-size: .9rem; font-weight: 500;
+    background: rgba(255,255,255,.07);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    transition: background .3s, scale .3s var(--ease);
+}
+.m-link i { width: 9px; height: 9px; border-radius: 50%; background: var(--dot, #fff); }
+.m-link:hover { background: rgba(255,255,255,.16); scale: 1.03; }
+.m-link:active { scale: .97; }
+.m-link:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.embed { flex: 1; min-height: 0; border-radius: 12px; overflow: hidden; }
+.embed iframe, .embed > div { display: block; width: 100% !important; height: 100% !important; border: 0; border-radius: 12px; }
+
+/* ---------- ARQUIVOS AUSENTES: fundo alternativo e foto sem imagem ---------- */
+.aurora { position: fixed; inset: 0; z-index: -4; display: none; overflow: hidden; background: #07070a; }
+body.no-video .aurora { display: block; }
+.aurora::before, .aurora::after {
+    content: ''; position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%;
+    filter: blur(80px); opacity: .5; animation: drift 18s ease-in-out infinite alternate;
+}
+.aurora::before { background: #3b3b6b; top: -20vmax; left: -15vmax; }
+.aurora::after  { background: #1f4b4a; bottom: -25vmax; right: -15vmax; animation-delay: -9s; }
+@keyframes drift { to { translate: 12vmax 8vmax; } }
+
+.avatar img:not([src]) { visibility: hidden; }
+.avatar.no-photo img { display: none; }
+.avatar.no-photo::after {
+    content: attr(data-letter);
+    position: absolute; inset: 3px; border-radius: 50%;
+    background: #111; display: grid; place-items: center;
+    font-size: 2.6rem; font-weight: 600;
+    animation: spin 6s linear infinite reverse paused;
+}
+body.on .avatar.no-photo::after { animation-play-state: running; }
+
+@media (max-width: 768px) {
+    .vol { bottom: 28px; width: clamp(112px, calc(100vw - 210px), 170px); gap: 9px; }
+    .vol-btn svg { width: 18px; height: 18px; }
+    .music-btn { width: 40px; height: 62px; }
+}
+
 /* ---------- MOBILE ---------- */
 @media (max-width: 768px) {
     .banner { height: 20vh; }
@@ -331,16 +514,17 @@ body.on .nickname span { opacity: 1; transform: none; filter: blur(0); }
     <i></i>
 </button>
 
-<video id="bg-video" class="video-background" src="capim/fundo.mp4" loop muted playsinline preload="auto"></video>
+<div class="aurora"></div>
+<video id="bg-video" class="video-background" loop muted playsinline preload="auto"></video>
 <div class="video-overlay"></div>
 <div class="grain"></div>
 
 <main class="stage">
-    <div class="banner"></div>
+    <div class="banner" id="banner-img"></div>
 
     <section class="profile">
-        <div class="avatar reveal" style="--i:0">
-            <img src="capim/foto.jpg" alt="Foto de perfil" draggable="false">
+        <div class="avatar reveal" id="avatar" data-letter="?" style="--i:0">
+            <img id="foto" alt="Foto de perfil" draggable="false">
         </div>
         <div class="nickname" id="nick" aria-label="Seu Nick">Seu Nick</div>
     </section>
@@ -359,6 +543,50 @@ body.on .nickname span { opacity: 1; transform: none; filter: blur(0); }
     </div>
     <div class="toast" id="toast">Copiado! ✅</div>
 </button>
+
+<!-- Volume (estilo iPhone) -->
+<div class="vol reveal" id="vol" data-level="2" style="--i:7">
+    <button class="vol-btn" id="vol-mute" type="button" aria-label="Silenciar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor"/>
+            <path class="w1" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+            <path class="w2" d="M18.5 5.5a9 9 0 0 1 0 13"/>
+            <path class="wx" d="M16 9l5 6M21 9l-5 6"/>
+        </svg>
+    </button>
+    <div class="vol-track" id="vol-track" role="slider" tabindex="0" aria-label="Volume do vídeo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40">
+        <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
+    </div>
+    <span class="vol-pct" id="vol-pct" aria-live="polite">40%</span>
+    <button class="vol-sp" id="vol-sp" type="button" aria-label="Tocando no Spotify. Toque para pausar">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="12" fill="#1ed760"/>
+            <g fill="none" stroke="#000" stroke-linecap="round">
+                <path d="M5.6 9c4.4-1.3 9.4-.9 13 1.3" stroke-width="1.9"/>
+                <path d="M6.3 12.5c3.7-1 7.7-.7 10.8 1.1" stroke-width="1.6"/>
+                <path d="M7 15.8c3-.8 6-.5 8.6.9" stroke-width="1.3"/>
+            </g>
+        </svg>
+    </button>
+</div>
+
+<!-- Aba da playlist (lado direito) -->
+<div class="music-tab">
+    <button class="music-btn" id="music-btn" type="button" aria-label="Abrir playlist" aria-expanded="false" aria-controls="music-panel">
+        <svg class="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <svg class="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+</div>
+<div class="music-scrim" id="music-scrim"></div>
+<aside class="music-panel" id="music-panel" aria-label="Playlist" inert>
+    <h2>Minha playlist</h2>
+    <div class="m-links">
+        <!-- ⚠️ COLOQUE O LINK DA SUA PLAYLIST DO LINER AQUI -->
+        <a class="m-link" style="--dot:#1ed760" href="https://open.spotify.com/playlist/2sw1VROZNQphIfwXJ8Zaeq?si=ff500b186a954e76" target="_blank" rel="noopener" aria-label="Abrir playlist no Spotify"><i></i>Spotify</a>
+        <a class="m-link" href="#" target="_blank" rel="noopener" aria-label="Abrir playlist no Liner"><i></i>Liner</a>
+    </div>
+    <div class="embed" id="embed"></div>
+</aside>
 
 <script>
 document.addEventListener('contextmenu', e => e.preventDefault());
@@ -392,7 +620,7 @@ function enter(e) {
         intro.classList.add('open');
         document.body.classList.add('on');
     });
-    video.play().catch(err => console.log('Autoplay bloqueado:', err));
+    startAudio();
     setTimeout(() => intro.remove(), 1400);
 }
 intro.addEventListener('click', enter);
@@ -440,6 +668,211 @@ $('pix').addEventListener('click', () => {
         t.remove();
     });
 });
+
+/* ===== VOLUME (estilo iPhone) ===== */
+const VOLUME_PADRAO = 0.4; // volume inicial ao entrar (0 a 1). Use 0 para começar mudo.
+const vol = $('vol'), track = $('vol-track'), fill = $('vol-fill'), muteBtn = $('vol-mute');
+let level = VOLUME_PADRAO, lastLevel = VOLUME_PADRAO;
+let ctx = null, gain = null;
+
+/* iPhone ignora video.volume; nesse caso o volume passa por Web Audio */
+const volumeNativo = (() => {
+    const o = video.volume;
+    video.volume = .5;
+    const ok = video.volume === .5;
+    video.volume = o;
+    return ok;
+})();
+
+let duck = 1, duckRaf = 0, spotifyOn = false;   // duck: 1 = vídeo com som, 0 = vídeo calado (Spotify tocando)
+
+function applyOutput() {
+    const v = level * duck;
+    if (gain) gain.gain.value = v; else video.volume = v;
+    video.muted = !gain && v === 0;
+}
+
+function fadeDuck(to) {
+    cancelAnimationFrame(duckRaf);
+    const from = duck, t0 = performance.now(), D = 700;
+    const step = now => {
+        const p = Math.min(1, (now - t0) / D);
+        duck = from + (to - from) * p;
+        applyOutput();
+        if (p < 1) duckRaf = requestAnimationFrame(step);
+    };
+    duckRaf = requestAnimationFrame(step);
+}
+
+function setSpotify(on) {
+    if (on === spotifyOn) return;
+    spotifyOn = on;
+    vol.classList.toggle('spotify', on);
+    fadeDuck(on ? 0 : 1);
+}
+
+const pctEl = $('vol-pct');
+let pctTimer = 0;
+function showPct() {
+    pctEl.textContent = Math.round(level * 100) + '%';
+    vol.classList.add('show-pct');
+    clearTimeout(pctTimer);
+    pctTimer = setTimeout(() => vol.classList.remove('show-pct'), 1600);
+}
+
+function setVolume(v) {
+    level = Math.min(1, Math.max(0, v));
+    if (level > 0) lastLevel = level;
+    applyOutput();
+    fill.style.width = (level * 100) + '%';
+    vol.dataset.level = level === 0 ? 0 : level < .5 ? 1 : 2;
+    track.setAttribute('aria-valuenow', Math.round(level * 100));
+    muteBtn.setAttribute('aria-label', level === 0 ? 'Ativar som' : 'Silenciar');
+}
+
+function startAudio() {
+    if (!volumeNativo) {
+        try {
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            gain = ctx.createGain();
+            ctx.createMediaElementSource(video).connect(gain).connect(ctx.destination);
+            ctx.resume();
+        } catch (e) { ctx = gain = null; }
+    }
+    video.muted = false;
+    setVolume(level);
+    video.play().catch(() => {
+        if (document.body.classList.contains('no-video')) return;
+        /* navegador bloqueou com som: toca mudo e a barra mostra isso */
+        setVolume(0);
+        video.muted = true;
+        video.play().catch(err => console.log('Autoplay bloqueado:', err));
+    });
+}
+
+const fromPointer = e => {
+    const r = track.getBoundingClientRect();
+    setVolume((e.clientX - r.left) / r.width);
+    showPct();
+};
+track.addEventListener('pointerdown', e => {
+    track.setPointerCapture(e.pointerId);
+    vol.classList.add('drag');
+    fromPointer(e);
+});
+track.addEventListener('pointermove', e => { if (vol.classList.contains('drag')) fromPointer(e); });
+['pointerup', 'pointercancel'].forEach(t =>
+    track.addEventListener(t, () => vol.classList.remove('drag')));
+track.addEventListener('keydown', e => {
+    const step = e.shiftKey ? .2 : .05;
+    const k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowUp')        setVolume(level + step);
+    else if (k === 'ArrowLeft' || k === 'ArrowDown')  setVolume(level - step);
+    else if (k === 'Home') setVolume(0);
+    else if (k === 'End')  setVolume(1);
+    else return;
+    showPct();
+    e.preventDefault();
+});
+muteBtn.addEventListener('click', () => { setVolume(level > 0 ? 0 : (lastLevel || VOLUME_PADRAO)); showPct(); });
+setVolume(level);
+
+/* ===== PLAYLIST (player oficial do Spotify) ===== */
+const SPOTIFY_URI   = 'spotify:playlist:2sw1VROZNQphIfwXJ8Zaeq';
+const SPOTIFY_EMBED = 'https://open.spotify.com/embed/playlist/2sw1VROZNQphIfwXJ8Zaeq?utm_source=generator&si=50b462c6579c4624';
+const embed = $('embed');
+let spApi = null, spController = null, embedStarted = false, embedTimer = 0, spTimer = 0;
+
+/* o Spotify avisa quando começa/pausa; é isso que faz o som do vídeo sair */
+function onSpotify(e) {
+    const playing = e.data && e.data.isPaused === false;
+    clearTimeout(spTimer);
+    if (playing) setSpotify(true);
+    else spTimer = setTimeout(() => setSpotify(false), 500);
+}
+
+function criarController() {
+    if (spController) return;
+    clearTimeout(embedTimer);
+    const holder = document.createElement('div');
+    embed.append(holder);
+    spApi.createController(holder, { uri: SPOTIFY_URI, width: '100%', height: '352' }, c => {
+        spController = c;
+        c.addListener('playback_update', onSpotify);
+    });
+}
+
+/* plano B: se a API do Spotify não carregar, usa o iframe simples */
+function embedSimples() {
+    if (spController || embed.firstChild) return;
+    const f = document.createElement('iframe');
+    f.src = SPOTIFY_EMBED;
+    f.setAttribute('allow', 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+    f.setAttribute('allowfullscreen', '');
+    f.loading = 'lazy';
+    embed.append(f);
+}
+
+window.onSpotifyIframeApiReady = api => { spApi = api; if (embedStarted) criarController(); };
+
+function iniciarEmbed() {           // carrega só na primeira vez que o painel abre
+    if (embedStarted) return;
+    embedStarted = true;
+    if (spApi) criarController();
+    else embedTimer = setTimeout(embedSimples, 6000);
+}
+
+$('vol-sp').addEventListener('click', () => { if (spController) spController.pause(); });
+
+const mBtn = $('music-btn'), mPanel = $('music-panel');
+function toggleMusic(open = !document.body.classList.contains('music-open')) {
+    document.body.classList.toggle('music-open', open);
+    mPanel.inert = !open;
+    if (open) iniciarEmbed();
+    mBtn.setAttribute('aria-expanded', open);
+    mBtn.setAttribute('aria-label', open ? 'Fechar playlist' : 'Abrir playlist');
+}
+mBtn.addEventListener('click', () => toggleMusic());
+$('music-scrim').addEventListener('click', () => toggleMusic(false));
+addEventListener('keydown', e => { if (e.key === 'Escape') toggleMusic(false); });
+
+/* ===== ARQUIVOS: banner, foto e vídeo (aceita várias extensões) ===== */
+const PASTA = 'capim';   // pasta onde ficam banner, foto e fundo
+const EXT_IMG = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'JPG', 'JPEG', 'PNG', 'WEBP'];
+
+function achar(nome, exts) {
+    return new Promise(ok => {
+        let i = 0;
+        const prox = () => {
+            if (i >= exts.length) return ok(null);
+            const url = PASTA + '/' + nome + '.' + exts[i++];
+            const im = new Image();
+            im.onload = () => ok(url);
+            im.onerror = prox;
+            im.src = url;
+        };
+        prox();
+    });
+}
+
+achar('banner', EXT_IMG).then(u => { if (u) $('banner-img').style.backgroundImage = "url('" + u + "')"; });
+achar('foto', EXT_IMG).then(u => {
+    if (u) $('foto').src = u; else $('avatar').classList.add('no-photo');
+});
+$('avatar').dataset.letter = (nick.getAttribute('aria-label') || '?').trim()[0].toUpperCase();
+
+const FORMATOS = [['mp4', 'video/mp4'], ['webm', 'video/webm'], ['mov', 'video/quicktime'], ['MP4', 'video/mp4']];
+FORMATOS.forEach(([ext, type], i) => {
+    const src = document.createElement('source');
+    src.src = PASTA + '/fundo.' + ext;
+    src.type = type;
+    if (i === FORMATOS.length - 1) src.addEventListener('error', () => document.body.classList.add('no-video'));
+    video.append(src);
+});
+video.load();
 </script>
+
+<!-- Player do Spotify: fica depois do script principal de propósito (precisa do onSpotifyIframeApiReady já definido) -->
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>
