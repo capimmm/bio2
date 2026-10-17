@@ -463,6 +463,7 @@ body.music-open .music-panel { transform: none; box-shadow: -20px 0 60px rgba(0,
 body.no-video .aurora { display: block; }
 body.no-video .video-background { display: none; }
 #dbg {
+    white-space: pre-line;
     position: fixed; top: 10px; left: 10px; right: 10px; z-index: 99999;
     padding: 10px 14px; border-radius: 12px;
     background: rgba(140,25,25,.92); color: #fff;
@@ -519,12 +520,13 @@ body.on .avatar.no-photo::after { animation-play-state: running; }
 <body>
 
 <button id="intro" type="button" aria-label="Entrar no site">
-    <span>Clique para entrar</span>
+    <span id="intro-txt">Carregando…</span>
     <i></i>
 </button>
 
 <div class="aurora"></div>
 <video id="bg-video" class="video-background" loop muted playsinline preload="auto"></video>
+<audio id="bg-audio" loop preload="auto"></audio>
 <div class="video-overlay"></div>
 <div class="grain"></div>
 
@@ -602,7 +604,7 @@ body.on .avatar.no-photo::after { animation-play-state: running; }
 document.addEventListener('contextmenu', e => e.preventDefault());
 
 const $ = id => document.getElementById(id);
-const intro = $('intro'), video = $('bg-video');
+const intro = $('intro'), video = $('bg-video'), bgAudio = $('bg-audio');
 const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 /* Nick vira letras individuais para a animação em onda */
@@ -685,21 +687,20 @@ const vol = $('vol'), track = $('vol-track'), fill = $('vol-fill'), muteBtn = $(
 let level = VOLUME_PADRAO, lastLevel = VOLUME_PADRAO;
 let ctx = null, gain = null;
 
-/* iPhone ignora video.volume; nesse caso o volume passa por Web Audio */
+/* iPhone ignora audio.volume; nesse caso o volume passa por Web Audio */
 const volumeNativo = (() => {
-    const o = video.volume;
-    video.volume = .5;
-    const ok = video.volume === .5;
-    video.volume = o;
+    const o = bgAudio.volume;
+    bgAudio.volume = .5;
+    const ok = bgAudio.volume === .5;
+    bgAudio.volume = o;
     return ok;
 })();
 
-let duck = 1, duckRaf = 0, spotifyOn = false;   // duck: 1 = vídeo com som, 0 = vídeo calado (Spotify tocando)
+let duck = 1, duckRaf = 0, spotifyOn = false;   // duck: 1 = áudio de fundo tocando, 0 = calado (Spotify tocando)
 
 function applyOutput() {
     const v = level * duck;
-    if (gain) gain.gain.value = v; else video.volume = v;
-    video.muted = !gain && v === 0;
+    if (gain) gain.gain.value = v; else bgAudio.volume = v;
 }
 
 function fadeDuck(to) {
@@ -742,23 +743,19 @@ function setVolume(v) {
 }
 
 function startAudio() {
+    /* o vídeo é só imagem (sempre mudo); o som vem do capim/audio.* */
+    video.muted = true;
+    video.play().catch(() => {});
     if (!volumeNativo) {
         try {
             ctx = new (window.AudioContext || window.webkitAudioContext)();
             gain = ctx.createGain();
-            ctx.createMediaElementSource(video).connect(gain).connect(ctx.destination);
+            ctx.createMediaElementSource(bgAudio).connect(gain).connect(ctx.destination);
             ctx.resume();
         } catch (e) { ctx = gain = null; }
     }
-    video.muted = false;
     setVolume(level);
-    video.play().catch(() => {
-        if (document.body.classList.contains('no-video')) return;
-        /* navegador bloqueou com som: toca mudo e a barra mostra isso */
-        setVolume(0);
-        video.muted = true;
-        video.play().catch(err => console.log('Autoplay bloqueado:', err));
-    });
+    bgAudio.play().catch(err => statusVideo('O áudio não tocou: ' + (err && err.name) + '. Confira se existe capim/audio.m4a (ou .mp3).', false, 'audio'));
 }
 
 const fromPointer = e => {
@@ -873,32 +870,60 @@ achar('foto', EXT_IMG).then(u => {
 $('avatar').dataset.letter = (nick.getAttribute('aria-label') || '?').trim()[0].toUpperCase();
 
 /* ===== VÍDEO DE FUNDO + DIAGNÓSTICO (abra o site com ?debug no final do endereço) ===== */
-const FORMATOS = [['mp4', 'video/mp4'], ['webm', 'video/webm'], ['mov', 'video/quicktime'], ['MP4', 'video/mp4']];
+/* nomes que o site procura dentro da pasta (na ordem). Pode adicionar outros. */
+const VIDEOS = ['video.mp4', 'video.webm', 'video.mov', 'fundo.mp4'];
+const AUDIOS = ['audio.m4a', 'audio.mp3', 'audio.ogg', 'audio.wav', 'audio.aac'];
+const TIPOS = { mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+                m4a: 'audio/mp4', mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav', aac: 'audio/aac' };
 const debugOn = /[?&]debug\b/.test(location.search);
 let dbgEl = null, videoTocou = false, decodeRuim = false, falhas = 0;
 
-function statusVideo(msg, ok) {
-    console[ok ? 'log' : 'warn']('[vídeo] ' + msg);
+const msgs = {};
+function statusVideo(msg, ok, tag = 'video') {
+    console[ok ? 'log' : 'warn']('[' + tag + '] ' + msg);
     if (!debugOn) return;
     if (!dbgEl) { dbgEl = document.createElement('div'); dbgEl.id = 'dbg'; document.body.append(dbgEl); }
-    dbgEl.className = ok ? 'ok' : '';
-    dbgEl.textContent = (ok ? '✅ ' : '⚠️ ') + msg;
+    msgs[tag] = (ok ? '✅ ' : '⚠️ ') + msg;
+    const todas = Object.values(msgs);
+    dbgEl.className = todas.every(m => m.startsWith('✅')) ? 'ok' : '';
+    dbgEl.textContent = todas.join('\n');
 }
 function falhouVideo(msg) {
     document.body.classList.add('no-video');   // mostra o fundo alternativo
     statusVideo(msg, false);
 }
 
-FORMATOS.forEach(([ext, type]) => {
-    const src = document.createElement('source');
-    src.src = PASTA + '/fundo.' + ext;
-    src.type = type;
-    src.addEventListener('error', () => {
-        if (++falhas === FORMATOS.length)
-            falhouVideo('Não achei ou não consegui abrir ' + PASTA + '/fundo.mp4 (nem .webm/.mov). Confira o nome, a pasta e maiúsculas/minúsculas.');
+function carregarMidia(el, arquivos, aoFalharTudo) {
+    let falhou = 0;
+    arquivos.forEach(nome => {
+        const src = document.createElement('source');
+        src.src = PASTA + '/' + nome;
+        const tipo = TIPOS[nome.split('.').pop().toLowerCase()];
+        if (tipo) src.type = tipo;
+        src.addEventListener('error', () => { if (++falhou === arquivos.length) aoFalharTudo(); });
+        el.append(src);
     });
-    video.append(src);
+    el.load();
+}
+
+carregarMidia(video, VIDEOS, () =>
+    falhouVideo('Não achei nenhum vídeo em ' + PASTA + '/ (procurei ' + VIDEOS.join(', ') + '). Confira o nome e as maiúsculas.'));
+carregarMidia(bgAudio, AUDIOS, () =>
+    statusVideo('Não achei nenhum áudio em ' + PASTA + '/ (procurei ' + AUDIOS.join(', ') + '). Fica sem som de fundo.', false, 'audio'));
+
+bgAudio.addEventListener('playing', () => statusVideo('Áudio tocando.', true, 'audio'));
+bgAudio.addEventListener('error', () => {
+    if (bgAudio.error && bgAudio.error.code === 3) statusVideo('O áudio foi encontrado mas não decodifica. Converta para .m4a (AAC) ou .mp3.', false, 'audio');
 });
+
+/* a intro avisa "Carregando…" até o vídeo ter dados para tocar */
+const introTxt = $('intro-txt');
+const pronto = () => { introTxt.textContent = 'Clique para entrar'; };
+video.addEventListener('canplay', pronto, { once: true });
+video.addEventListener('error', pronto, { once: true });
+setTimeout(pronto, 8000);       // não deixa o visitante esperando para sempre
+video.muted = true;
+video.play().catch(() => {});   // vídeo mudo pode começar a carregar já, atrás da intro
 
 video.addEventListener('error', () => {
     const c = video.error && video.error.code;
@@ -927,7 +952,6 @@ intro.addEventListener('click', () => setTimeout(() => {
         falhouVideo('O vídeo demorou demais para começar (arquivo muito pesado?). Compacte o fundo.mp4.');
 }, 12000));
 
-video.load();
 </script>
 
 <!-- Player do Spotify: fica depois do script principal de propósito (precisa do onSpotifyIframeApiReady já definido) -->
