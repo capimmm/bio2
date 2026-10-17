@@ -4,54 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bio Site</title>
-    <!-- Fonte Google -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Fonte Moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        /* Reset básico */
+        :root {
+            --apple-curve: cubic-bezier(0.16, 1, 0.3, 1);
+            --glass-bg: rgba(20, 20, 20, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased; /* Deixa as fontes mais nítidas (Apple style) */
+            font-family: 'Outfit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            
+            /* REMOVE A SELEÇÃO DE TEXTO E AZULZINHO NO CELULAR */
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             width: 100vw;
             height: 100vh;
             overflow: hidden; 
-            background-color: #000;
+            background-color: #050505;
             color: #fff;
+            cursor: default;
         }
 
         /* =========================================
-           TELA DE INTRODUÇÃO (OVERLAY)
+           TELA DE INTRODUÇÃO
            ========================================= */
         #intro-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             cursor: pointer;
-            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.8s;
+            transition: opacity 0.8s var(--apple-curve), visibility 0.8s;
         }
 
         #intro-overlay h1 {
             font-weight: 300;
-            letter-spacing: 2px;
-            font-size: 1.1rem;
+            letter-spacing: 3px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
             animation: pulse 2s infinite ease-in-out;
-            color: rgba(255, 255, 255, 0.7);
         }
 
         /* =========================================
-           VÍDEO DE FUNDO (HTML5)
+           VÍDEO DE FUNDO
            ========================================= */
         .video-background {
             position: fixed;
@@ -66,36 +76,35 @@
             pointer-events: none;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 1.5s ease;
+            transition: opacity 1.5s var(--apple-curve);
         }
 
-        /* Overlay escuro no vídeo para melhorar a leitura */
+        /* Overlay escuro para dar contraste */
         .video-overlay {
             position: fixed;
             inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
+            background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
             z-index: -1;
             opacity: 0;
-            transition: opacity 1.5s ease;
+            transition: opacity 1.5s var(--apple-curve);
         }
 
         /* =========================================
-           BANNER SUPERIOR
+           BANNER SUPERIOR (AGORA MENOR)
            ========================================= */
         .banner {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 28vh; /* Altura ajustada para ficar mais elegante */
+            height: 22vh; /* Diminuído de 32vh para 22vh */
             background: url('./capim/banner.jpg') center/cover no-repeat;
             z-index: 1;
             opacity: 0;
-            transform: translateY(-20px) scale(1.02);
-            transition: opacity 1s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: translateY(-20px);
+            transition: opacity 1s var(--apple-curve), transform 1s var(--apple-curve);
         }
 
-        /* Gradiente para fundir o banner com o fundo */
         .banner::after {
             content: '';
             position: absolute;
@@ -103,15 +112,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, transparent 20%, rgba(0,0,0,0.7) 80%, #000 100%);
+            background: linear-gradient(to bottom, transparent 0%, rgba(5,5,5,0.6) 60%, #050505 100%);
         }
 
         /* =========================================
-           FOTO DE PERFIL E NICKNAME (HOVER)
+           FOTO DE PERFIL E NICK (MAIS PRA CIMA)
            ========================================= */
         .profile-wrapper {
             position: fixed;
-            top: calc(28vh - 70px); /* Centralizado metade pra fora do banner */
+            top: calc(22vh - 60px); /* Ajustado para acompanhar o banner menor */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
@@ -119,44 +128,41 @@
             flex-direction: column;
             align-items: center;
             opacity: 0;
-            transition: opacity 1s ease 0.3s;
+            transition: opacity 1s var(--apple-curve) 0.2s;
         }
 
         .profile-pic {
-            width: 140px;
-            height: 140px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid #000; /* Borda preta para destacar do banner */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Efeito Mola Apple */
+            border: 3px solid #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.1);
+            transition: all 0.5s var(--apple-curve);
             cursor: pointer;
         }
 
         .profile-wrapper:hover .profile-pic {
-            transform: scale(1.08) translateY(-5px);
-            border-color: #fff;
-            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 0 4px rgba(255, 255, 255, 0.3);
         }
 
-        /* Nickname escondido por padrão */
         .nickname {
-            margin-top: 12px;
+            margin-top: 15px;
             font-size: 1.2rem;
             font-weight: 600;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 1);
             opacity: 0;
-            transform: translateY(-10px) scale(0.9);
-            filter: blur(8px);
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(-10px);
+            filter: blur(5px);
+            transition: all 0.5s var(--apple-curve);
             pointer-events: none;
         }
 
-        /* Revelar Nickname no Hover */
         .profile-wrapper:hover .nickname {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
             filter: blur(0);
         }
 
@@ -165,271 +171,212 @@
            ========================================= */
         .links-container {
             position: fixed;
-            top: 54%; /* Posição centralizada abaixo da foto */
+            top: 55%; /* Ajustado para equilibrar */
             left: 50%;
             transform: translate(-50%, -50%);
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             width: 90%;
-            max-width: 380px; /* Largura ajustada para não ficar esticado */
+            max-width: 340px; 
             z-index: 5;
             opacity: 0;
-            transition: opacity 1s ease 0.5s, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s;
+            transition: opacity 1s var(--apple-curve) 0.4s, transform 1s var(--apple-curve) 0.4s;
         }
 
         .link-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 18px 24px;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 18px;
+            padding: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
             color: #fff;
             text-decoration: none;
             font-weight: 500;
-            font-size: 1rem;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            transition: all 0.4s var(--apple-curve);
         }
 
         .link-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: scale(1.04) translateY(-3px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+            background: #ffffff;
+            color: #000000;
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
         }
 
         /* =========================================
-           PIX (LATERAL ESQUERDA - SEM FUNDO)
+           PIX (AGORA EMBAIXO NA ESQUERDA)
            ========================================= */
         .pix-sidebar {
             position: fixed;
             left: 40px;
-            top: 54%;
-            transform: translateY(-50%);
+            bottom: 40px; /* Movido para baixo */
+            top: auto;
+            transform: translateY(0);
             z-index: 10;
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
             opacity: 0;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.5s var(--apple-curve);
         }
 
-        .pix-sidebar:hover {
-            transform: translateY(-50%) scale(1.1);
+        .qr-wrapper {
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s var(--apple-curve);
+        }
+
+        .pix-sidebar:hover .qr-wrapper {
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.2);
         }
 
         .qr-code {
-            width: 160px;
-            height: 160px;
-            /* Filtro de sombra branca para o QR Code (que é preto) ficar visível 
-               sobre o fundo escuro sem precisar de uma caixa branca */
-            filter: drop-shadow(0px 0px 15px rgba(255, 255, 255, 0.6));
-            transition: filter 0.4s ease;
+            width: 110px;
+            height: 110px;
+            display: block;
         }
 
-        .pix-sidebar:hover .qr-code {
-            filter: drop-shadow(0px 0px 25px rgba(255, 255, 255, 0.9));
-        }
-
-        /* Texto de copiado que aparece magicamente */
         .pix-copy-text {
             position: absolute;
-            bottom: -35px;
-            font-size: 0.85rem;
+            bottom: 130px; /* Joga o aviso pra cima do QR code */
+            background: #4ade80;
+            color: #000;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: #4ade80;
-            background: rgba(0,0,0,0.8);
-            padding: 4px 12px;
+            padding: 6px 16px;
             border-radius: 20px;
             opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(10px) scale(0.9);
+            transition: all 0.4s var(--apple-curve);
             pointer-events: none;
             white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.3);
         }
 
         .pix-copy-text.copied {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
 
         /* =========================================
-           ANIMAÇÕES E RESPONSIVIDADE
+           CLASSES DE ANIMAÇÃO (JS)
            ========================================= */
         @keyframes pulse {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
 
-        /* Classes para ativar as animações via JS */
-        .show-element {
-            opacity: 1 !important;
-        }
+        .show-element { opacity: 1 !important; }
+        .banner.show-element { transform: translateY(0) !important; }
+        .links-container.show-element { transform: translate(-50%, -50%) !important; }
+        .pix-sidebar.show-element { transform: translateY(0) !important; }
 
-        .banner.show-element {
-            transform: translateY(0) scale(1) !important;
-        }
-        
-        .links-container.show-element {
-            transform: translate(-50%, -50%) !important;
-        }
-
-        .pix-sidebar.show-element {
-            transform: translateY(-50%) !important;
-        }
-
-        /* Telas menores (Mobile / Tablets) */
-        @media (max-width: 1024px) {
-            .pix-sidebar {
-                left: 20px;
-            }
-            .qr-code {
-                width: 120px;
-                height: 120px;
-            }
-        }
-
+        /* =========================================
+           RESPONSIVIDADE (MOBILE)
+           ========================================= */
         @media (max-width: 768px) {
-            .banner {
-                height: 25vh;
-            }
-            .profile-wrapper {
-                top: calc(25vh - 60px);
-            }
-            .profile-pic {
-                width: 120px;
-                height: 120px;
-            }
-            .links-container {
-                top: 60%;
-                gap: 12px;
-            }
-            .link-btn {
-                padding: 16px 20px;
-                font-size: 0.95rem;
-            }
-            /* No celular, o Pix fica fixo no canto inferior esquerdo menor */
-            .pix-sidebar {
-                left: 50%;
-                top: auto;
-                bottom: 30px;
-                transform: translateX(-50%) !important;
-            }
-            .qr-code {
-                width: 90px;
-                height: 90px;
-            }
-            .pix-sidebar.show-element {
-                transform: translateX(-50%) !important;
-            }
-            .pix-sidebar:hover {
-                transform: translateX(-50%) scale(1.1) !important;
-            }
+            .banner { height: 20vh; }
+            .profile-wrapper { top: calc(20vh - 50px); }
+            .profile-pic { width: 100px; height: 100px; }
+            .nickname { font-size: 1.1rem; }
+            .links-container { top: 52%; gap: 10px; }
+            
+            /* No celular, o Pix fica no cantinho sem atrapalhar */
+            .pix-sidebar { left: 20px; bottom: 20px; }
+            .qr-wrapper { padding: 6px; border-radius: 12px; }
+            .qr-code { width: 60px; height: 60px; }
+            .pix-copy-text { bottom: 75px; font-size: 0.7rem; padding: 4px 10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Tela de Introdução -->
+    <!-- Intro -->
     <div id="intro-overlay">
         <h1>Clique para entrar</h1>
     </div>
 
-    <!-- Vídeo de Fundo (Puxando da pasta /capim) -->
-    <video 
-        id="bg-video" 
-        class="video-background" 
-        src="./capim/fundo.mp4" 
-        loop 
-        muted 
-        playsinline
-        preload="auto">
-    </video>
+    <!-- Vídeo (O caminho está exatamente como na sua imagem do GitHub) -->
+    <video id="bg-video" class="video-background" src="capim/fundo.mp4" loop muted playsinline preload="auto"></video>
     <div class="video-overlay" id="video-overlay"></div>
 
-    <!-- Banner Topo (Puxando da pasta /capim) -->
+    <!-- Banner -->
     <div class="banner" id="banner"></div>
 
-    <!-- Foto e Nick (Hover) (Puxando da pasta /capim) -->
+    <!-- Perfil -->
     <div class="profile-wrapper" id="profile">
-        <img src="./capim/foto.jpg" alt="Foto de Perfil" class="profile-pic">
-        <div class="nickname">Seu Nick Aqui</div>
+        <img src="capim/foto.jpg" alt="Foto" class="profile-pic">
+        <div class="nickname">Seu Nick</div>
     </div>
 
-    <!-- Botões Centrais -->
+    <!-- Links -->
     <div class="links-container" id="links">
-        <a href="#" class="link-btn" target="_blank">🌐 Meu Portfólio</a>
-        <a href="#" class="link-btn" target="_blank">📸 Instagram</a>
-        <a href="#" class="link-btn" target="_blank">▶️ Canal no YouTube</a>
-        <a href="#" class="link-btn" target="_blank">💬 Grupo no WhatsApp</a>
+        <a href="#" class="link-btn" target="_blank">Instagram</a>
+        <a href="#" class="link-btn" target="_blank">YouTube</a>
+        <a href="#" class="link-btn" target="_blank">Portfólio</a>
+        <a href="#" class="link-btn" target="_blank">WhatsApp</a>
     </div>
 
-    <!-- Pix Lateral Esquerda (Sem fundo e sem textos) -->
+    <!-- Pix -->
     <div class="pix-sidebar" id="pix">
-        <!-- Você pode substituir o link abaixo pela sua imagem de QR Code na pasta capim (ex: ./capim/qrcode.png) -->
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=ChavePixFicticia123&color=000000&bgcolor=FFFFFF" alt="QR Code Pix" class="qr-code">
-        <div class="pix-copy-text" id="pix-text">Chave Copiada! ✅</div>
+        <div class="qr-wrapper">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=ChavePixFicticia123&color=000000&bgcolor=FFFFFF" alt="QR Code" class="qr-code">
+        </div>
+        <div class="pix-copy-text" id="pix-text">Copiado! ✅</div>
     </div>
 
     <script>
-        // ==========================================
-        // 1. Lógica de Inicialização (Intro + Vídeo + Animações)
-        // ==========================================
+        // BLOQUEAR BOTÃO DIREITO (ANTI-CÓPIA DE IMAGEM)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
         const overlay = document.getElementById('intro-overlay');
         const video = document.getElementById('bg-video');
         const videoOverlay = document.getElementById('video-overlay');
         
-        // Elementos a serem animados
         const banner = document.getElementById('banner');
         const profile = document.getElementById('profile');
         const links = document.getElementById('links');
         const pix = document.getElementById('pix');
 
+        // Iniciar Tudo
         overlay.addEventListener('click', () => {
-            // Esconde o overlay suavemente
             overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.style.visibility = 'hidden';
-            }, 800);
+            setTimeout(() => { overlay.style.visibility = 'hidden'; }, 800);
 
-            // Dá play no vídeo local
-            video.play().catch(error => console.log("Erro ao iniciar vídeo:", error));
-            
-            // Mostra o vídeo
-            video.style.opacity = '1';
-            videoOverlay.style.opacity = '1';
+            // Toca o vídeo
+            video.play().then(() => {
+                video.style.opacity = '1';
+                videoOverlay.style.opacity = '1';
+            }).catch(e => console.log("Erro no autoplay do video:", e));
 
-            // Efeito cascata para os elementos (Motion Apple)
-            setTimeout(() => { banner.classList.add('show-element'); }, 200);
-            setTimeout(() => { profile.classList.add('show-element'); }, 500);
-            setTimeout(() => { links.classList.add('show-element'); }, 700);
-            setTimeout(() => { pix.classList.add('show-element'); }, 900);
+            // Efeito Cascata Suave
+            setTimeout(() => banner.classList.add('show-element'), 100);
+            setTimeout(() => profile.classList.add('show-element'), 300);
+            setTimeout(() => links.classList.add('show-element'), 500);
+            setTimeout(() => pix.classList.add('show-element'), 700);
         });
 
-        // ==========================================
-        // 2. Lógica de Copiar o Pix
-        // ==========================================
+        // Copiar Pix
         const pixSidebar = document.getElementById('pix');
         const pixText = document.getElementById('pix-text');
-        
-        // ⚠️ COLOQUE SUA CHAVE PIX AQUI DENTRO DAS ASPAS ⚠️
-        const chavePix = "seu-email@exemplo.com"; 
+        const chavePix = "seu-email@exemplo.com"; // ⚠️ COLOQUE SUA CHAVE AQUI
 
         pixSidebar.addEventListener('click', () => {
             navigator.clipboard.writeText(chavePix).then(() => {
-                // Feedback visual animado
                 pixText.classList.add('copied');
-                
-                setTimeout(() => {
-                    pixText.classList.remove('copied');
-                }, 2500);
+                setTimeout(() => pixText.classList.remove('copied'), 2500);
             }).catch(err => {
-                console.error('Erro ao copiar: ', err);
                 alert("Erro ao copiar. A chave é: " + chavePix);
             });
         });
